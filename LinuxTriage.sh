@@ -72,7 +72,7 @@ FileSystem(){
 	mkdir $currentPath/.results/FileSystem
 	fileSystemPath=$currentPath/.results/FileSystem
 	#get_all_files_info
-	find / -type f -exec stat {} \; -execdir echo -n "Sha256: " \; -execdir bash -c 'echo $(sha256sum {})|sed "s/ .*//g"' \; -execdir echo -n " Magic: " \; -execdir bash -c 'echo $(file {})|sed "s/.* //g"' \; -execdir echo "" \; >> $fileSystemPath
+	find / -type f -exec stat {} \; -execdir echo -n "Sha256: " \; -execdir bash -c 'echo $(sha256sum {})|sed "s/ .*//g"' \; -execdir echo -n " Magic: " \; -execdir bash -c 'echo $(file {})|sed "s/.* //g"' \; -execdir echo "" \; >> $fileSystemPath/fileSystemlog
 
 }
 
@@ -192,8 +192,9 @@ else
 		fi
 	else
 		if [ "$type" == "full" ]
-			_show_parameters $type $currentPath
 		then
+			echo "[ \"$type\" == \"full\" ]"
+			_show_parameters $type $currentPath
 			if _directory_exists $currentPath;
 			then
 				mkdir $currentPath/.results
