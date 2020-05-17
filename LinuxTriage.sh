@@ -1,8 +1,8 @@
 #!/bin/bash
 
-##LiveInformation
+#Gets information about the live sistem
 LiveInformation(){
-	echo"LiveInformation being recorded"
+	echo -e "NOW: LiveInformation being recorded \n"
 	##¿debería comprobar si netstat o ss, lo mismo con ip addr y ifconfig?
 	mkdir $currentPath/.results/LiveInfo
 	liveInfoPath=$currentPath/.results/LiveInfo
@@ -30,8 +30,9 @@ LiveInformation(){
 	lsmod >> $liveInfoPath/handles
 }
 
+#Collects some important files
 Dumps(){
-	echo"Dumps being recorded"
+	echo -e "NOW: Dumps being recorded \n"
 	mkdir $currentPath/.results/Dumps
 	dumpsPath=$currentPath/.results/Dumps
 	#get_temp
@@ -44,7 +45,7 @@ Dumps(){
 	#get_passwd
 	cp /etc/passwd $dumpsPath/etc_passwd
 	#get_groups
-	cp /etc/groups $dumpsPath/etc_groups
+	cp /etc/group $dumpsPath/etc_groups
 	#get_etc_bashrc
 	cp /etc/bash.bashrc $dumpsPath/etc_bashrc
 	#get_etc_profile
@@ -65,9 +66,9 @@ Dumps(){
 	dd if=$bootDisk of=$dumpsPath/mbr.raw bs=512 count=1
 }
 
-
+#FileSystem listing
 FileSystem(){
-	echo"FileSystem being recorded"
+	echo -e "NOW: FileSystem being recorded \n"
 	mkdir $currentPath/.results/FileSystem
 	fileSystemPath=$currentPath/.results/FileSystem
 	#get_all_files_info
@@ -75,9 +76,11 @@ FileSystem(){
 
 }
 
-
+#Compress all, remove malware, give permisions
 CompressAndRemove(){
-	tar -cvfz $currentPath/evidencias.tar.gz $currentPath/.results --remove-files
+	mv $currentPath/.results $currentPath/evidence
+	tar -cvzf $currentPath/evidence.tar.gz  -C $currentPath/ evidence  --remove-files
+	chown $(logname):$(logname) $currentPath/evidence.tar.gz
 }
 
 #main method
@@ -88,47 +91,126 @@ if [ "$EUID" -ne 0 ]
 fi
 
 usage(){
-	echo "Usage: $0 [--version <fast|full>] [--out <directory>"
+	echo "Usage: $0 --type <fast|full> [--out <directory>]" 1>&2;
+	echo "-t, --type	sets the type of triage to execute" 1>&2;
+	echo "-o, --out 	sets the output directory" 1>&2;
+	echo "-v, --version 	shows version and credits of the tool" 1>&2;
+	echo "-h, --help 	shows this help" 1>&2;
+	exit 1;
 }
-while getopts ":version:out:" opt
+
+version(){
+	echo "Native linux triage tool: $0, Version: 1.0" 1>&2;
+	echo "Developed by @C_rl_s087" 1>&2;
+	exit 1;
+}
+
+_directory_exists(){
+		[ -d "$1" ] 
+}
+
+_show_parameters(){
+	echo "Selected parameters:"
+	echo "Type of triage: $1"
+	echo -e "Output directory: $2\n"
+}
+
+
+unset out
+unset opt
+unset type
+
+# Transform long options to short ones
+for arg in "$@"; do
+  shift
+  case "$arg" in
+    "--type")		set -- "$@" "-t" ;;
+    "--out")		set -- "$@" "-o" ;;
+    "--version")	set -- "$@" "-v" ;;
+	"--help")	set -- "$@" "-h" ;;
+	"--"*)			usage;;
+    *)				set -- "$@" "$arg"
+  esac
+done
+
+OPTIND=1
+while getopts ":t:o:vh" opt
 do
-	case $opt in
-		version)
-			version=${OPTARG}
-			((version=="fast" || version=="full")) || usage
+	case "$opt" in
+		t)
+			type=${OPTARG}
 			;;
-		out)
+		o)
 			out=${OPTARG}
 			;;
-		*)
+		v)
+			version
+			;;
+		h)
 			usage
-			exit 1 ;;
+			;;
+		*)
+			if [ "$OPTERR" != 1 ] || [ "${optspec:0:1}" = ":" ]; then
+			    echo "Non-option argument: '-${OPTARG}'" >&2
+			fi
+			usage
+			;;
 	esac
 done
+shift "$((OPTIND-1))"
 
 #Set output directory
 if [ -z "$out" ]
 then
-	currentPath=pwd
+	currentPath=$(pwd)
 else
-	currentPath=$out
+	currentPath=$(pwd)"/"$out
 fi
-mkdir $currentPath/.results
-echo "test1"
+
 #select_execution_mode
-if [ -z "$version" ]
+if [ -z "$type" ]
 then
-	echo "[--version <fast|full>] is mandatory"
-	exit 1
+	echo -e "ERROR: The parameter [--type <fast|full>] is mandatory \n"
+	usage
 else
-	if [ "$version" == "fast" ]
+	if [ "$type" == "fast" ]
 	then
-		LiveInformation
-		Dumps
+		_show_parameters $type $currentPath
+		if _directory_exists $currentPath
+		then
+			mkdir $currentPath/.results
+			LiveInformation
+			Dumps
+		else
+			mkdir -p $currentPath/.results
+			chown $(logname):$(logname) $currentPath
+			echo "USUARIO:  $(logname)"
+			LiveInformation
+			Dumps
+		fi
 	else
-		LiveInformation
-		Dumps
-		FileSystem
+		if [ "$type" == "full" ]
+			_show_parameters $type $currentPath
+		then
+			if _directory_exists $currentPath;
+			then
+				mkdir $currentPath/.results
+				LiveInformation
+				Dumps
+				FileSystem
+			else
+				mkdir -p $currentPath/.results
+				chown $(logname):$(logname) $currentPath
+				LiveInformation
+				Dumps
+				FileSyste
+			fi
+		else
+			echo -e "ERROR: Wrong type of triage: \"$type\" does not exist \n"
+			usage
+		fi
 	fi
-if
-CompressAndRemove
+	CompressAndRemove
+	exit 1
+fi
+exit 1
