@@ -83,15 +83,8 @@ CompressAndRemove(){
 	chown $(logname):$(logname) $currentPath/evidence.tar.gz
 }
 
-#main method
-#Comprobamos que se ejecute como root
-if [ "$EUID" -ne 0 ]
-  then echo "Bro, this program will only run as root..."
-  exit
-fi
-
 usage(){
-	echo "Usage: $0 --type <fast|full> [--out <directory>]" 1>&2;
+	echo "Usage: sudo $0 --type <fast|full> [--out <directory>]" 1>&2;
 	echo "-t, --type	sets the type of triage to execute" 1>&2;
 	echo "-o, --out 	sets the output directory" 1>&2;
 	echo "-v, --version 	shows version and credits of the tool" 1>&2;
@@ -115,6 +108,15 @@ _show_parameters(){
 	echo -e "Output directory: $2\n"
 }
 
+
+
+#main method
+#Comprobamos que se ejecute como root
+if [ "$EUID" -ne 0 ]
+  then
+  	echo -e "Bro, this program will only run as root...\n"
+  	usage
+fi
 
 unset out
 unset opt
