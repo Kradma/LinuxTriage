@@ -59,7 +59,7 @@ Dumps(){
 	do 
 		tar -rvf $dumpsPath/varLog.tar $file; 
 	done; 
-	gzip varLog.tar
+	gzip $dumpsPath/varLog.tar
 
 	#get_mbr
 	bootDisk=$(fdisk -l |grep -oP '\/dev\/[a-z]+(?=[0-9]+\s*\*)')
