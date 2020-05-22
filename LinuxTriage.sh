@@ -110,7 +110,7 @@ _show_parameters(){
 
 #Bonus
 KnockKnock(){
-	echo "Do nothing"
+	echo "Knock knock knocking on penquins door"
 	exit 1;
 }
 
