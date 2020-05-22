@@ -13,15 +13,15 @@ LiveInformation(){
 	#get_os_info
 	hostnamectl >> $liveInfoPath/hostnamectl
 	#get_network_cards
-	ip addr >> $liveInfoPath/ip_addr
+	(ip addr || ifconfig -a) >> $liveInfoPath/ip_addr
 	#get_hostname
 	hostname >> $liveInfoPath/hostname
 	#get_network_connection
-	echo "####### ss -apetul #######" >> $liveInfoPath/network_connections
-	ss -apetul >> $liveInfoPath/network_connections
+	echo "####### ss/netstat -apetul #######" >> $liveInfoPath/network_connections
+	(ss -apetul|| netstat -apetul) >> $liveInfoPath/network_connections
 	echo "\n" >> $liveInfoPath/network_connections
-	echo "####### Plain ss #######" >> $liveInfoPath/network_connections
-	ss >> $liveInfoPath/network_connections
+	echo "####### Plain ss/netstat #######" >> $liveInfoPath/network_connections
+	(ss || netstat) >> $liveInfoPath/network_connections
 	#get_logon
 	last -Faixw >> $liveInfoPath/logon
 	#get_handles
