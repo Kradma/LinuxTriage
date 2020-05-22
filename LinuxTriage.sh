@@ -108,6 +108,12 @@ _show_parameters(){
 	echo -e "Output directory: $2\n"
 }
 
+#Bonus
+KnockKnock(){
+	echo "Do nothing"
+	exit 1;
+}
+
 
 
 #main method
@@ -209,8 +215,22 @@ else
 				FileSyste
 			fi
 		else
-			echo -e "ERROR: Wrong type of triage: \"$type\" does not exist \n"
-			usage
+			if [ "$type" == "penquin" ]
+			then
+				echo "[ \"$type\" == \"full\" ]"
+				_show_parameters $type $currentPath
+				if _directory_exists $currentPath;
+				then
+					mkdir $currentPath/.results
+					KnockKnock
+				else
+					mkdir -p $currentPath/.results
+					KnockKnock
+				fi
+			else
+				echo -e "ERROR: Wrong type of triage: \"$type\" does not exist \n"
+				usage
+			fi
 		fi
 	fi
 	CompressAndRemove
