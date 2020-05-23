@@ -2,58 +2,119 @@
 
 #Gets information about the live sistem
 LiveInformation(){
-	echo -e "NOW: LiveInformation being recorded \n"
+	echo -e "NOW: LiveInformation() started \n"
 	##¿debería comprobar si netstat o ss, lo mismo con ip addr y ifconfig?
 	mkdir $currentPath/.results/LiveInfo
 	liveInfoPath=$currentPath/.results/LiveInfo
+
+	echo -e "NOW: LiveInformation() getting SYSTEM INFO \n"
+	###SYSTEM INFO###
 	#get_Processes
+	echo "####### ps -ewo %p,%P,%x,%t,%u,%c,%a #######" >> $liveInfoPath/processes
 	ps -ewo %p,%P,%x,%t,%u,%c,%a >> $liveInfoPath/processes
 	#get_kernel_version
+	echo "####### uname -a #######" >> $liveInfoPath/kernel_versio
 	uname -a >> $liveInfoPath/kernel_version
 	#get_os_info
+	echo "####### hostnamectl #######" >> $liveInfoPath/hostnamectl
 	hostnamectl >> $liveInfoPath/hostnamectl
+	#get_logon
+	echo "####### last -Faixw #######" >> $liveInfoPath/logon
+	last -Faixw >> $liveInfoPath/logon
+	#get_handles
+	echo "####### lsof -R #######" >> $liveInfoPath/handles
+	lsof -R >> $liveInfoPath/handles
+	#get_modules
+	echo "####### lsmod #######" >> $liveInfoPath/modules
+	lsmod >> $liveInfoPath/modules
+
+	echo -e "NOW: LiveInformation() getting NETWORK INFO \n"
+	###NETWORK INFO###
 	#get_network_cards
+	echo "####### (ip addr || ifconfig -a) #######" >> $liveInfoPath/ip_addr
 	(ip addr || ifconfig -a) >> $liveInfoPath/ip_addr
 	#get_hostname
+	echo "####### hostname #######" >> $liveInfoPath/hostname
 	hostname >> $liveInfoPath/hostname
 	#get_network_connection
 	echo "####### ss/netstat -apetul #######" >> $liveInfoPath/network_connections
 	(ss -apetul|| netstat -apetul) >> $liveInfoPath/network_connections
 	echo "\n" >> $liveInfoPath/network_connections
+	echo "####### ss/netstat -putona #######" >> $liveInfoPath/network_connections
+	(ss -putona|| netstat -putona) >> $liveInfoPath/network_connections
+	echo "\n" >> $liveInfoPath/network_connections
 	echo "####### Plain ss/netstat #######" >> $liveInfoPath/network_connections
 	(ss || netstat) >> $liveInfoPath/network_connections
-	#get_logon
-	last -Faixw >> $liveInfoPath/logon
-	#get_handles
-	lsof -R >> $liveInfoPath/handles
-	#get_modules
-	lsmod >> $liveInfoPath/handles
+	#get_System_diagnostic
+	echo "####### dmesg #######" >> $liveInfoPath/dmesg
+	dmesg >> $liveInfoPath/dmesg
+	#get_routes
+	echo "####### route || ip r #######" >> $liveInfoPath/routes
+	(route || ip r) >> $liveInfoPath/routes
+	#get_neighbors
+	echo "####### arp -v  || ip -s neigh #######" >> $liveInfoPath/neighbors
+	(arp -v || ip -s neigh) >> $liveInfoPath/neighbors
 }
 
 #Collects some important files
 Dumps(){
-	echo -e "NOW: Dumps being recorded \n"
+	echo -e "NOW: Dumps() started \n"
 	mkdir $currentPath/.results/Dumps
 	dumpsPath=$currentPath/.results/Dumps
+
+	echo -e "NOW: Dumps() getting /tmp folder\n"
 	#get_temp
 	tar -czvf $dumpsPath/tmp_files.tar.gz /tmp
+
+	echo -e "NOW: Dumps() getting AUTORUNS \n"
+	###AUTORUNS###
 	#get_autoruns
 	mkdir $dumpsPath/autoruns
 	tar -czvf $dumpsPath/autoruns/dotDFiles.tar.gz /etc/*.d
 	tar -czvf $dumpsPath/autoruns/cronFiles.tar.gz /etc/cron*
 	tar -czvf $dumpsPath/autoruns/init.tar.gz /etc/init
+	tar -czvf $dumpsPath/autoruns/systemd.tar.gz /lib/systemd/system/
+	cp /etc/rc.local $dumpsPath/autoruns/rc_local
+
+	echo -e "NOW: Dumps() getting SYSTEM info FILES\n"
+	###SYSTEM FILES###
 	#get_passwd
-	cp /etc/passwd $dumpsPath/etc_passwd
+	echo "####### /etc/passwd #######" >> $dumpsPath/etc_passwd
+	cat /etc/passwd >> $dumpsPath/etc_passwd
 	#get_groups
-	cp /etc/group $dumpsPath/etc_groups
+	echo "####### /etc/group #######" >> $dumpsPath/etc_groups
+	cat /etc/group >> $dumpsPath/etc_groups
 	#get_etc_bashrc
-	cp /etc/bash.bashrc $dumpsPath/etc_bashrc
+	echo "####### /etc/bash.bashrc #######" >> $dumpsPath/etc_bashrc
+	cat /etc/bash.bashrc >> $dumpsPath/etc_bashrc
 	#get_etc_profile
-	cp /etc/profile $dumpsPath/etc_profile
+	echo "####### /etc/profile #######" >> $dumpsPath/etc_profile
+	cat /etc/profile >> $dumpsPath/etc_profile
+	#get_etc_sudoers
+	echo "####### /etc/sudoers #######" >> $dumpsPath/etc_sudoers
+	cat /etc/sudoers >> $dumpsPath/etc_sudoers
+	#get_os_release
+	echo "####### /etc/os-release #######" >> $dumpsPath/os_release
+	cat /etc/os-release >> $dumpsPath/os_release
+
+	echo -e "NOW: Dumps() getting NETWORK info FILES\n"
+	###NETWORK FILES###
+	#get_network_interfaces
+	echo "####### /etc/network/interfaces #######" >> $dumpsPath/interfaces
+	cat /etc/network/interfaces >>  $dumpsPath/interfaces
+	#get_etc_host
+	echo "####### /etc/host #######" >> $dumpsPath/hosts
+	cat /etc/host >> $dumpsPath/hosts
+	#get_etc_resolv.conf
+	echo "####### /etc/resolv.conf #######" >> $dumpsPath/resolv_conf
+	cat /etc/resolv.conf >> $dumpsPath/resolv_conf
+
 	
 	#PERUSER get_ssh_known_hosts
 	#cp /etc/profile $dumpsPath/
 
+	echo -e "NOW: Dumps() getting /var/log folder\n"
+	###LOGS###
 	#get_logs
 	for file in $(find /var/log -maxdepth 1 -type f -size -10M);
 	do 
@@ -61,9 +122,32 @@ Dumps(){
 	done; 
 	gzip $dumpsPath/varLog.tar
 
+	echo -e "NOW: Dumps() getting MBR sector\n"
+	###MBR###
 	#get_mbr
 	bootDisk=$(fdisk -l |grep -oP '\/dev\/[a-z]+(?=[0-9]+\s*\*)')
 	dd if=$bootDisk of=$dumpsPath/mbr.raw bs=512 count=1
+}
+
+PerUserDumps(){
+	echo -e "NOW: Per user dumps being recorded \n"
+	mkdir $currentPath/.results/PerUserDumps
+	perUserPath=$currentPath/.results/PerUserDumps
+	users=$(ls /home)
+	ls /home/ >> $perUserPath/user_list
+	
+	echo -e "NOW: PerUserDumps() getting hiddenFiles\n"
+	#get_user_files
+	for user in $users;
+	do
+		mkdir $perUserPath/$user/
+		find /home/$user -type f -maxdepth 1 -name '.*' -exec tar -rvf $perUserPath/$user/hiddenFiles.tar {} \;
+		gzip $perUserPath/$user/hiddenFiles.tar
+		#tar -czvf $perUserPath/$user/hiddenFiles.tar.gz /home/$user/.*
+		#cd /home/$user && tar -cvzf $perUserPath/$user/hiddenFiles.tar.gz $(ls -pa /home/$user  | grep -v / |grep -ie "^\.[a-z]") && cd -
+		crontab -u $user -l >> $perUserPath/$user/crontab	
+	done
+
 }
 
 #FileSystem listing
@@ -189,12 +273,14 @@ else
 			mkdir $currentPath/.results
 			LiveInformation
 			Dumps
+			PerUserDumps
 		else
 			mkdir -p $currentPath/.results
 			chown $(logname):$(logname) $currentPath
 			echo "USUARIO:  $(logname)"
 			LiveInformation
 			Dumps
+			PerUserDumps
 		fi
 	else
 		if [ "$type" == "full" ]
@@ -206,12 +292,14 @@ else
 				mkdir $currentPath/.results
 				LiveInformation
 				Dumps
+				PerUserDumps
 				FileSystem
 			else
 				mkdir -p $currentPath/.results
 				chown $(logname):$(logname) $currentPath
 				LiveInformation
 				Dumps
+				PerUserDumps
 				FileSyste
 			fi
 		else
