@@ -62,9 +62,11 @@ Dumps(){
 	mkdir $currentPath/.results/Dumps
 	dumpsPath=$currentPath/.results/Dumps
 
-	echo -e "NOW: Dumps() getting /tmp folder\n"
+	echo -e "NOW: Dumps() getting TEMPORARY FILES\n"
+	###TEMPORARY FILES###
 	#get_temp
 	tar -czvf $dumpsPath/tmp_files.tar.gz /tmp
+	tar -czvf $dumpsPath/var_tmp_files.tar.gz /var/tmp
 
 	echo -e "NOW: Dumps() getting AUTORUNS \n"
 	###AUTORUNS###
@@ -141,7 +143,7 @@ PerUserDumps(){
 	for user in $users;
 	do
 		mkdir $perUserPath/$user/
-		find /home/$user -type f -maxdepth 1 -name '.*' -exec tar -rvf $perUserPath/$user/hiddenFiles.tar {} \;
+		find /home/$user -maxdepth 1 -type f -name '.*' -exec tar -rvf $perUserPath/$user/hiddenFiles.tar {} \;
 		gzip $perUserPath/$user/hiddenFiles.tar
 		#tar -czvf $perUserPath/$user/hiddenFiles.tar.gz /home/$user/.*
 		#cd /home/$user && tar -cvzf $perUserPath/$user/hiddenFiles.tar.gz $(ls -pa /home/$user  | grep -v / |grep -ie "^\.[a-z]") && cd -
@@ -195,7 +197,63 @@ _show_parameters(){
 #Bonus
 KnockKnock(){
 	echo "Knock knock knocking on penquins door"
-	exit 1;
+	mkdir $currentPath/.results/penquinsDoor
+	penquinPath=$currentPath/.results/penquinsDoor
+
+	##d0f208486c90384117172796dc07f256##
+	##Waits for commands in a file placed at /var/tmp/task##
+	cp /var/tmp/task $penquinPath/task_file
+
+	##b4755c24e6a84e447c96b29ca6ed8633##
+	##Tool that extracts the first and last 1Kb from a file.##
+	##The data is writen in files with their names plus .head or .tail.##
+	mkdir $penquinPath/headTailFiles/
+	find / -type f -name \*.head -execdir cp {} $penquinPath/headTailFiles/ \;
+	find / -type f -name \*.tail -execdir cp {} $penquinPath/headTailFiles/ \;
+
+	##4065d2a24240426f6e9912a22bbfbab5##
+	##The malware checks for the /var/tmp/task* files, If these are empty,
+	## It procures the information and forks.##
+	cp /var/tmp/taskhost $penquinPath/taskhost_file
+	cp /var/tmp/taskpid $penquinPath/taskpid_file
+	cp /var/tmp/tasklog $penquinPath/tasklog_file
+	cp /var/tmp/taskgid $penquinPath/taskgid_file
+	##Then it saves logs at /var/tmp/.Xtmp01 and also it creates files ended with .xk###
+	cp /var/tmp/.Xtmp01 $penquinPath/xtmp01_file
+	mkdir $penquinPath/xkFiles
+	find / -type f -name \*.xk -execdir cp {} $penquinPath/xkFiles/ \;
+
+	##14cce7e641d308c3a177a8abb5457019##
+	##The malware is a compilation of the LOKI2 source code, it creates a file called loki.log##
+	find / -type f -name loki.log -execdir cp {} $penquinPath/ \;
+
+
+	##7b86f40e861705d59f5206c482e1f2a5##
+	##The malware checks for the file /var/tmp/gogo if it misses, the malware ends##
+	cp /var/tmp/gogo $penquinPath/gogo_file
+
+	##d8347b2e32086bd25d41530849472b8d##
+	##Shell script to extract all uniq source and destination IP from RES.u and RES.s to the file "list".##
+	find / -type f -name RES.u  -execdir cp {} $penquinPath/ \;
+	find / -type f -name RES.s  -execdir cp {} $penquinPath/ \;
+	find / -type f -name list  -exec tar -rvf $penquinPath/listFiles.tar {} \;
+	gzip $penquinPath/listFiles.tar
+	##35f87672e8b7cc4641f01fb4f2efe8c3##
+	##Shell script that between others it creates a file called res.tar##
+	find / -type f -name res.tar  -execdir cp {} $penquinPath/ \;
+
+	##Unknown##
+	##The backdoor downloads and executes this file /tmp/.xdfg or /root/.xfdshp1##
+	cp /tmp/.xdfg $penquinPath/xdfg_file
+	cp /root/.xfdshp1 $penquinPath/xfdshp1_file
+	##Why not getting all the hidden files in tmp??##
+	find /tmp -maxdepth 1 -type f  -name '.*' -execdir tar -rvf $penquinPath/hiddenTMPFiles.tar {} \;
+	gzip $penquinPath/hiddenTMPFiles.tar
+	find /root -maxdepth 1 -type f  -name '.*' -execdir tar -rvf $penquinPath/hiddenROOTFiles.tar {} \;
+	gzip $penquinPath/hiddenROOTFiles.tar
+	
+
+	echo -e "\n...that's it. peace man :)\n"
 }
 
 
@@ -305,7 +363,7 @@ else
 		else
 			if [ "$type" == "penquin" ]
 			then
-				echo "[ \"$type\" == \"full\" ]"
+				echo "[ \"$type\" == \"penquin\" ]"
 				_show_parameters $type $currentPath
 				if _directory_exists $currentPath;
 				then
@@ -313,6 +371,7 @@ else
 					KnockKnock
 				else
 					mkdir -p $currentPath/.results
+					chown $(logname):$(logname) $currentPath
 					KnockKnock
 				fi
 			else
