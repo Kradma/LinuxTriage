@@ -196,64 +196,85 @@ _show_parameters(){
 
 #Bonus
 KnockKnock(){
-	echo "Knock knock knocking on penquins door"
-	mkdir $currentPath/.results/penquinsDoor
-	penquinPath=$currentPath/.results/penquinsDoor
+	echo -e "\n__we_are_happy__\n"
+	mkdir $currentPath/.results/penquinsNest
+	penquinPath=$currentPath/.results/penquinsNest
 
 	##d0f208486c90384117172796dc07f256##
 	##Waits for commands in a file placed at /var/tmp/task##
-	cp /var/tmp/task $penquinPath/task_file
+	cp /var/tmp/task $penquinPath/task_file 2>/dev/null
 
 	##b4755c24e6a84e447c96b29ca6ed8633##
 	##Tool that extracts the first and last 1Kb from a file.##
 	##The data is writen in files with their names plus .head or .tail.##
 	mkdir $penquinPath/headTailFiles/
-	find / -type f -name \*.head -execdir cp {} $penquinPath/headTailFiles/ \;
-	find / -type f -name \*.tail -execdir cp {} $penquinPath/headTailFiles/ \;
+	find / -type f -name \*.head -execdir cp {} $penquinPath/headTailFiles/ \; 2>/dev/null
+	find / -type f -name \*.tail -execdir cp {} $penquinPath/headTailFiles/ \; 2>/dev/null
+
+	echo -e "\nHiding complit...n\n"
 
 	##4065d2a24240426f6e9912a22bbfbab5##
 	##The malware checks for the /var/tmp/task* files, If these are empty,
 	## It procures the information and forks.##
-	cp /var/tmp/taskhost $penquinPath/taskhost_file
-	cp /var/tmp/taskpid $penquinPath/taskpid_file
-	cp /var/tmp/tasklog $penquinPath/tasklog_file
-	cp /var/tmp/taskgid $penquinPath/taskgid_file
+	cp /var/tmp/taskhost $penquinPath/taskhost_file 2>/dev/null
+	cp /var/tmp/taskpid $penquinPath/taskpid_file 2>/dev/null
+	cp /var/tmp/tasklog $penquinPath/tasklog_file 2>/dev/null
+	cp /var/tmp/taskgid $penquinPath/taskgid_file 2>/dev/null
 	##Then it saves logs at /var/tmp/.Xtmp01 and also it creates files ended with .xk###
-	cp /var/tmp/.Xtmp01 $penquinPath/xtmp01_file
+	cp /var/tmp/.Xtmp01 $penquinPath/xtmp01_file 2>/dev/null 
 	mkdir $penquinPath/xkFiles
-	find / -type f -name \*.xk -execdir cp {} $penquinPath/xkFiles/ \;
+	find / -type f -name \*.xk -execdir cp {} $penquinPath/xkFiles/ \; 2>/dev/null
 
 	##14cce7e641d308c3a177a8abb5457019##
 	##The malware is a compilation of the LOKI2 source code, it creates a file called loki.log##
-	find / -type f -name loki.log -execdir cp {} $penquinPath/ \;
+	find / -type f -name loki.log -execdir cp {} $penquinPath/ \; 2>/dev/null 
 
+	echo -e "\nreceving message\n"
 
 	##7b86f40e861705d59f5206c482e1f2a5##
 	##The malware checks for the file /var/tmp/gogo if it misses, the malware ends##
-	cp /var/tmp/gogo $penquinPath/gogo_file
+	cp /var/tmp/gogo $penquinPath/gogo_file 2>/dev/null
 
 	##d8347b2e32086bd25d41530849472b8d##
 	##Shell script to extract all uniq source and destination IP from RES.u and RES.s to the file "list".##
-	find / -type f -name RES.u  -execdir cp {} $penquinPath/ \;
-	find / -type f -name RES.s  -execdir cp {} $penquinPath/ \;
-	find / -type f -name list  -exec tar -rvf $penquinPath/listFiles.tar {} \;
+	find / -type f -name RES.u  -execdir cp {} $penquinPath/ \; 2>/dev/null
+	find / -type f -name RES.s  -execdir cp {} $penquinPath/ \; 2>/dev/null
+	find / -type f -name list  -exec tar -rvf $penquinPath/listFiles.tar {} \; 2>/dev/null
 	gzip $penquinPath/listFiles.tar
 	##35f87672e8b7cc4641f01fb4f2efe8c3##
 	##Shell script that between others it creates a file called res.tar##
-	find / -type f -name res.tar  -execdir cp {} $penquinPath/ \;
+	find / -type f -name res.tar  -execdir cp {} $penquinPath/ \; 2>/dev/null
 
-	##Unknown##
-	##The backdoor downloads and executes this file /tmp/.xdfg or /root/.xfdshp1##
-	cp /tmp/.xdfg $penquinPath/xdfg_file
-	cp /root/.xfdshp1 $penquinPath/xfdshp1_file
-	##Why not getting all the hidden files in tmp??##
+	echo -e "\nopen file for read\n"
+
+	##67d9556c695ef6c51abf6fbab17acb3466e3149cf4d20cb64d6d34dc969b6502##
+	##Hidden files used by penquin referer at leonardocompany.com paper##
+	cp /tmp/.xdfg $penquinPath/xdfg_file 2>/dev/null
+	cp /tmp/.sync.pid $penquinPath/sync_pid_file 2>/dev/null
+	cp /root/.xfdshp1 $penquinPath/xfdshp1_file 2>/dev/null
+	cp /root/.session $penquinPath/sesssion_file 2>/dev/null
+	cp /root/.sess $penquinPath/sess_file 2>/dev/null
+	cp /root/.hsperfdata $penquinPath/hsperfdata_file 2>/dev/null
+	
+	echo -e "\nConnect successful....\n"
+
+	##Why not getting all the hidden files in tmp and root##
 	find /tmp -maxdepth 1 -type f  -name '.*' -execdir tar -rvf $penquinPath/hiddenTMPFiles.tar {} \;
 	gzip $penquinPath/hiddenTMPFiles.tar
 	find /root -maxdepth 1 -type f  -name '.*' -execdir tar -rvf $penquinPath/hiddenROOTFiles.tar {} \;
 	gzip $penquinPath/hiddenROOTFiles.tar
 	
+	##God tool's are grep and find not Yara##
+	find /home /tmp /etc /var /root ! -path . -type f -size -5000k -exec grep -Hal '__we_are_happy_\|VS filesystem\|remote filesystem!\|rem_fd:\|TREX_PID\|Z@@NM@@G_Y_FE\|supported only on ethernet/FDDI/token\||  size  |state|\|IPv6 address %s not supported' {} \; >>$penquinPath/grepedFilesList 2>/dev/null
+	[ -s $penquinPath/grepedFilesList ] && {
+		mkdir $penquinPath/grepedFiles;
+		while IFS="" read -r p || [ -n "$p" ];
+			do  cp "$p"  $penquinPath/grepedFiles/;
+		done < $penquinPath/grepedList;
+	}
 
 	echo -e "\n...that's it. peace man :)\n"
+	echo -e "Done!\n"
 }
 
 
@@ -343,7 +364,6 @@ else
 	else
 		if [ "$type" == "full" ]
 		then
-			echo "[ \"$type\" == \"full\" ]"
 			_show_parameters $type $currentPath
 			if _directory_exists $currentPath;
 			then
@@ -363,7 +383,6 @@ else
 		else
 			if [ "$type" == "penquin" ]
 			then
-				echo "[ \"$type\" == \"penquin\" ]"
 				_show_parameters $type $currentPath
 				if _directory_exists $currentPath;
 				then
