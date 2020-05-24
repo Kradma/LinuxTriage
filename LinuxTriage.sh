@@ -298,15 +298,13 @@ KnockKnock(){
 	echo -e "Done!\n"
 }
 
-#main method
-# Only root users bro
-_banner
 
-if [ "$EUID" -ne 0 ]
-  then
-  	echo -e "Bro, this program will only run as root...\n"
-  	usage
-fi
+
+###############
+##MAIN METHOD##
+###############
+
+_banner
 
 unset out
 unset opt
@@ -358,6 +356,14 @@ then
 else
 	currentPath=$(pwd)"/"$out
 fi
+
+# Continue only allowed to root users bro
+if [ "$EUID" -ne 0 ]
+  then
+  	echo -e "Bro, this program will only run as root...\n"
+  	usage
+fi
+
 
 #select_execution_mode
 if [ -z "$type" ]
