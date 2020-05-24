@@ -1,4 +1,4 @@
-# PureLinuxTriage
+# PureLinuxTriage V2
 Usage: sudo ./linuxTriage.sh --type <fast|full> [--out \<directory\>]  
 -t, --type	sets the type of triage to execute  
 -o, --out 	sets the output directory  
