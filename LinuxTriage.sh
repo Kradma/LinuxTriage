@@ -2,12 +2,12 @@
 
 #Gets information about the live sistem
 LiveInformation(){
-	echo -e "NOW: LiveInformation() started \n"
+	echo -e "[INFO]: LiveInformation() started"
 	##¿debería comprobar si netstat o ss, lo mismo con ip addr y ifconfig?
 	mkdir $currentPath/.results/LiveInfo
 	liveInfoPath=$currentPath/.results/LiveInfo
 
-	echo -e "NOW: LiveInformation() getting SYSTEM INFO \n"
+	echo -e "[INFO LiveInformation()]: Getting SYSTEM INFO"
 	###SYSTEM INFO###
 	#get_Processes
 	echo "####### ps -ewo %p,%P,%x,%t,%u,%c,%a #######" >> $liveInfoPath/processes
@@ -27,8 +27,11 @@ LiveInformation(){
 	#get_modules
 	echo "####### lsmod #######" >> $liveInfoPath/modules
 	lsmod >> $liveInfoPath/modules
+	#get_System_diagnostic
+	echo "####### dmesg #######" >> $liveInfoPath/dmesg
+	dmesg >> $liveInfoPath/dmesg
 
-	echo -e "NOW: LiveInformation() getting NETWORK INFO \n"
+	echo -e "[INFO LiveInformation()]: Getting NETWORK INFO"
 	###NETWORK INFO###
 	#get_network_cards
 	echo "####### (ip addr || ifconfig -a) #######" >> $liveInfoPath/ip_addr
@@ -45,40 +48,37 @@ LiveInformation(){
 	echo "\n" >> $liveInfoPath/network_connections
 	echo "####### Plain ss/netstat #######" >> $liveInfoPath/network_connections
 	(ss || netstat) >> $liveInfoPath/network_connections
-	#get_System_diagnostic
-	echo "####### dmesg #######" >> $liveInfoPath/dmesg
-	dmesg >> $liveInfoPath/dmesg
 	#get_routes
 	echo "####### route || ip r #######" >> $liveInfoPath/routes
-	(route || ip r) >> $liveInfoPath/routes
+	(ip r || route ) >> $liveInfoPath/routes
 	#get_neighbors
 	echo "####### arp -v  || ip -s neigh #######" >> $liveInfoPath/neighbors
-	(arp -v || ip -s neigh) >> $liveInfoPath/neighbors
+	(ip -s neigh || arp -v ) >> $liveInfoPath/neighbors
 }
 
 #Collects some important files
 Dumps(){
-	echo -e "NOW: Dumps() started \n"
+	echo -e "\n[INFO]: Dumps() started"
 	mkdir $currentPath/.results/Dumps
 	dumpsPath=$currentPath/.results/Dumps
 
-	echo -e "NOW: Dumps() getting TEMPORARY FILES\n"
+	echo -e "[INFO Dumps()]: Getting TEMPORARY FILES"
 	###TEMPORARY FILES###
 	#get_temp
-	tar -czvf $dumpsPath/tmp_files.tar.gz /tmp
-	tar -czvf $dumpsPath/var_tmp_files.tar.gz /var/tmp
+	tar -czf $dumpsPath/tmp_files.tar.gz -C / tmp 
+	tar -czf $dumpsPath/var_tmp_files.tar.gz -C / var/tmp
 
-	echo -e "NOW: Dumps() getting AUTORUNS \n"
+	echo -e "\n[INFO Dumps()]: Getting AUTORUNS"
 	###AUTORUNS###
 	#get_autoruns
 	mkdir $dumpsPath/autoruns
-	tar -czvf $dumpsPath/autoruns/dotDFiles.tar.gz /etc/*.d
-	tar -czvf $dumpsPath/autoruns/cronFiles.tar.gz /etc/cron*
-	tar -czvf $dumpsPath/autoruns/init.tar.gz /etc/init
-	tar -czvf $dumpsPath/autoruns/systemd.tar.gz /lib/systemd/system/
+	$(cd / && tar -czf $dumpsPath/autoruns/dotDFiles.tar.gz etc/*.d)
+	$(cd / && tar -czf $dumpsPath/autoruns/cronFiles.tar.gz etc/cron*)
+	tar -czf $dumpsPath/autoruns/init.tar.gz -C / etc/init/
+	tar -czf $dumpsPath/autoruns/systemd.tar.gz -C / lib/systemd/system/
 	cp /etc/rc.local $dumpsPath/autoruns/rc_local
 
-	echo -e "NOW: Dumps() getting SYSTEM info FILES\n"
+	echo -e "\n[INFO Dumps()]: Getting SYSTEM FILES"
 	###SYSTEM FILES###
 	#get_passwd
 	echo "####### /etc/passwd #######" >> $dumpsPath/etc_passwd
@@ -99,32 +99,28 @@ Dumps(){
 	echo "####### /etc/os-release #######" >> $dumpsPath/os_release
 	cat /etc/os-release >> $dumpsPath/os_release
 
-	echo -e "NOW: Dumps() getting NETWORK info FILES\n"
+	echo -e "\n[INFO Dumps()]: Getting NETWORK FILES"
 	###NETWORK FILES###
 	#get_network_interfaces
 	echo "####### /etc/network/interfaces #######" >> $dumpsPath/interfaces
 	cat /etc/network/interfaces >>  $dumpsPath/interfaces
-	#get_etc_host
-	echo "####### /etc/host #######" >> $dumpsPath/hosts
-	cat /etc/host >> $dumpsPath/hosts
+	#get_etc_hosts
+	echo "####### /etc/hosts #######" >> $dumpsPath/hosts
+	cat /etc/hosts >> $dumpsPath/hosts
 	#get_etc_resolv.conf
 	echo "####### /etc/resolv.conf #######" >> $dumpsPath/resolv_conf
 	cat /etc/resolv.conf >> $dumpsPath/resolv_conf
 
-	
-	#PERUSER get_ssh_known_hosts
-	#cp /etc/profile $dumpsPath/
-
-	echo -e "NOW: Dumps() getting /var/log folder\n"
+	echo -e "\n[INFO Dumps()]: Getting /var/log folder"
 	###LOGS###
 	#get_logs
 	for file in $(find /var/log -maxdepth 1 -type f -size -10M);
 	do 
-		tar -rvf $dumpsPath/varLog.tar $file; 
+		tar -rf $dumpsPath/varLog.tar -C / $file 2>&1 | grep -v  "Removing leading"
 	done; 
 	gzip $dumpsPath/varLog.tar
 
-	echo -e "NOW: Dumps() getting MBR sector\n"
+	echo -e "\n[INFO Dumps()]: Getting MBR sector"
 	###MBR###
 	#get_mbr
 	bootDisk=$(fdisk -l |grep -oP '\/dev\/[a-z]+(?=[0-9]+\s*\*)')
@@ -132,19 +128,20 @@ Dumps(){
 }
 
 PerUserDumps(){
-	echo -e "NOW: Per user dumps being recorded \n"
+	echo -e "\n[INFO]: PerUserDumps started"
 	mkdir $currentPath/.results/PerUserDumps
 	perUserPath=$currentPath/.results/PerUserDumps
 	users=$(ls /home)
 	ls /home/ >> $perUserPath/user_list
-	
-	echo -e "NOW: PerUserDumps() getting hiddenFiles\n"
+	echo -e "[INFO PerUserDumps()]: Getting hiddenFiles"
 	#get_user_files
 	for user in $users;
 	do
 		mkdir $perUserPath/$user/
-		find /home/$user -maxdepth 1 -type f -name '.*' -exec tar -rvf $perUserPath/$user/hiddenFiles.tar {} \;
+		find /home/$user -maxdepth 1 -type f -name '.*' -exec tar -rf $perUserPath/$user/hiddenFiles.tar {} \; 2>&1 | grep -v  "Removing leading"
 		gzip $perUserPath/$user/hiddenFiles.tar
+		$(cd / && tar -czf $perUserPath/$user/hiddenConfig.tar.gz home/$user/.config)
+		cp /home/$user/.ssh/known_hosts $perUserPath/$user/ssh_known_hosts
 		#tar -czvf $perUserPath/$user/hiddenFiles.tar.gz /home/$user/.*
 		#cd /home/$user && tar -cvzf $perUserPath/$user/hiddenFiles.tar.gz $(ls -pa /home/$user  | grep -v / |grep -ie "^\.[a-z]") && cd -
 		crontab -u $user -l >> $perUserPath/$user/crontab	
@@ -154,7 +151,7 @@ PerUserDumps(){
 
 #FileSystem listing
 FileSystem(){
-	echo -e "NOW: FileSystem being recorded \n"
+	echo -e "[INFO]: FileSystem being recorded \n"
 	mkdir $currentPath/.results/FileSystem
 	fileSystemPath=$currentPath/.results/FileSystem
 	#get_all_files_info
@@ -162,16 +159,10 @@ FileSystem(){
 
 }
 
-#Compress all, remove malware, give permisions
-CompressAndRemove(){
-	mv $currentPath/.results $currentPath/evidence
-	tar -cvzf $currentPath/evidence.tar.gz  -C $currentPath/ evidence  --remove-files
-	chown $(logname):$(logname) $currentPath/evidence.tar.gz
-}
-
 usage(){
-	echo "Usage: sudo $0 --type <fast|full> [--out <directory>]" 1>&2;
+	echo "Usage: sudo $0 --type <fast|full> [--plugin <penquin> --out <FULL PATH directory>]" 1>&2;
 	echo "-t, --type	sets the type of triage to execute" 1>&2;
+	echo "-p, --plugin	sets the desired plugin to execute. Grabs choosen threat actor artifacts."
 	echo "-o, --out 	sets the output directory" 1>&2;
 	echo "-v, --version 	shows version and credits of the tool" 1>&2;
 	echo "-h, --help 	shows this help" 1>&2;
@@ -179,13 +170,103 @@ usage(){
 }
 
 version(){
-	echo "Pure linux triage tool: $0, Version: 2.0" 1>&2;
-	echo "Developed by  @C_rl_s087 at @lab52io" 1>&2;
+	echo "Pure linux triage tool: $0, Version: 2.5" 1>&2;
+	echo "Developed by Carles C. (@Kradma087)" 1>&2;
 	exit 1;
 }
 
+#Bonus
+KnockKnock(){
+	echo -e "[INFO]: Knocking penquins secret doors.\n"
+	echo -e "\n[Penquin]: __we_are_happy__\n"
+	mkdir $currentPath/.results/penquinsNest
+	penquinPath=$currentPath/.results/penquinsNest
+
+	##d0f208486c90384117172796dc07f256##
+	##Waits for commands in a file placed at /var/tmp/task##
+	cp /var/tmp/task $penquinPath/task_file 2>/dev/null
+
+	##b4755c24e6a84e447c96b29ca6ed8633##
+	##Tool that extracts the first and last 1Kb from a file.##
+	##The data is writen in files with their names plus .head or .tail.##
+	mkdir $penquinPath/headTailFiles/
+	find / -type f -name \*.head -execdir cp {} $penquinPath/headTailFiles/ \; 2>/dev/null
+	find / -type f -name \*.tail -execdir cp {} $penquinPath/headTailFiles/ \; 2>/dev/null
+
+	echo -e "\n[Penquin]: Hiding complit...n\n"
+
+	##4065d2a24240426f6e9912a22bbfbab5##
+	##The malware checks for the /var/tmp/task* files, If these are empty,
+	## It procures the information and forks.##
+	cp /var/tmp/taskhost $penquinPath/taskhost_file 2>/dev/null
+	cp /var/tmp/taskpid $penquinPath/taskpid_file 2>/dev/null
+	cp /var/tmp/tasklog $penquinPath/tasklog_file 2>/dev/null
+	cp /var/tmp/taskgid $penquinPath/taskgid_file 2>/dev/null
+	##Then it saves logs at /var/tmp/.Xtmp01 and also it creates files ended with .xk###
+	cp /var/tmp/.Xtmp01 $penquinPath/xtmp01_file 2>/dev/null 
+	mkdir $penquinPath/xkFiles
+	find / -type f -name \*.xk -execdir cp {} $penquinPath/xkFiles/ \; 2>/dev/null
+
+	##14cce7e641d308c3a177a8abb5457019##
+	##The malware is a compilation of the LOKI2 source code, it creates a file called loki.log##
+	find / -type f -name loki.log -execdir cp {} $penquinPath/ \; 2>/dev/null 
+
+	echo -e "\n[Penquin]: receving message\n"
+
+	##7b86f40e861705d59f5206c482e1f2a5##
+	##The malware checks for the file /var/tmp/gogo if it misses, the malware ends##
+	cp /var/tmp/gogo $penquinPath/gogo_file 2>/dev/null
+
+	##d8347b2e32086bd25d41530849472b8d##
+	##Shell script to extract all uniq source and destination IP from RES.u and RES.s to the file "list".##
+	find / -type f -name RES.u  -execdir cp {} $penquinPath/ \; 2>/dev/null
+	find / -type f -name RES.s  -execdir cp {} $penquinPath/ \; 2>/dev/null
+	find / -type f -name list  -exec tar -rvf $penquinPath/listFiles.tar {} \; 2>/dev/null
+	gzip $penquinPath/listFiles.tar
+	##35f87672e8b7cc4641f01fb4f2efe8c3##
+	##Shell script that between others it creates a file called res.tar##
+	find / -type f -name res.tar  -execdir cp {} $penquinPath/ \; 2>/dev/null
+
+	echo -e "\n[Penquin]: open file for read\n"
+
+	##67d9556c695ef6c51abf6fbab17acb3466e3149cf4d20cb64d6d34dc969b6502##
+	##Hidden files used by penquin referer at leonardocompany.com paper##
+	cp /tmp/.xdfg $penquinPath/xdfg_file 2>/dev/null
+	cp /tmp/.sync.pid $penquinPath/sync_pid_file 2>/dev/null
+	cp /root/.xfdshp1 $penquinPath/xfdshp1_file 2>/dev/null
+	cp /root/.session $penquinPath/sesssion_file 2>/dev/null
+	cp /root/.sess $penquinPath/sess_file 2>/dev/null
+	cp /root/.hsperfdata $penquinPath/hsperfdata_file 2>/dev/null
+	
+	echo -e "\n[Penquin]: Connect successful....\n"
+
+	##Why not getting all the hidden files in tmp and root##
+	find /tmp -maxdepth 1 -type f  -name '.*' -execdir tar -rvf $penquinPath/hiddenTMPFiles.tar {} \;
+	gzip $penquinPath/hiddenTMPFiles.tar
+	find /root -maxdepth 1 -type f  -name '.*' -execdir tar -rvf $penquinPath/hiddenROOTFiles.tar {} \;
+	gzip $penquinPath/hiddenROOTFiles.tar
+	
+	##God tool's are grep and find not Yara##
+	find /home /tmp /etc /var /root ! -path . -type f -size -5000k -exec grep -Hal '__we_are_happy_\|VS filesystem\|remote filesystem!\|rem_fd:\|TREX_PID\|Z@@NM@@G_Y_FE\|supported only on ethernet/FDDI/token\||  size  |state|\|IPv6 address %s not supported' {} \; >>$penquinPath/grepedFilesList 2>/dev/null
+	[ -s $penquinPath/grepedFilesList ] && {
+		mkdir $penquinPath/grepedFiles;
+		while IFS="" read -r p || [ -n "$p" ];
+			do  cp "$p"  $penquinPath/grepedFiles/;
+		done < $penquinPath/grepedList;
+	}
+
+	echo -e "\n[Penquin]: ...that's it. peace man :)\n"
+	echo -e "[Penquin]: Done!\n"
+}
+
+
+
+#################
+##UTIL FUNCTIONS#
+#################
 _banner(){
 	printf '\033[8;30;100t'
+	echo ""
 	cat << EOF
 
 	██╗     ██╗███╗   ██╗██╗   ██╗██╗  ██╗    ████████╗██████╗ ██╗ █████╗  ██████╗ ███████╗
@@ -210,94 +291,19 @@ _directory_exists(){
 }
 
 _show_parameters(){
-	echo "Selected parameters:"
-	echo "Type of triage: $1"
-	echo -e "Output directory: $2\n"
+	echo "The selected parameters are:"
+	echo "[Type]: $1"
+	echo "[Output]: $2"
+	echo -e "[Plugin]: $3\n"
 }
 
-#Bonus
-KnockKnock(){
-	echo -e "\n__we_are_happy__\n"
-	mkdir $currentPath/.results/penquinsNest
-	penquinPath=$currentPath/.results/penquinsNest
 
-	##d0f208486c90384117172796dc07f256##
-	##Waits for commands in a file placed at /var/tmp/task##
-	cp /var/tmp/task $penquinPath/task_file 2>/dev/null
-
-	##b4755c24e6a84e447c96b29ca6ed8633##
-	##Tool that extracts the first and last 1Kb from a file.##
-	##The data is writen in files with their names plus .head or .tail.##
-	mkdir $penquinPath/headTailFiles/
-	find / -type f -name \*.head -execdir cp {} $penquinPath/headTailFiles/ \; 2>/dev/null
-	find / -type f -name \*.tail -execdir cp {} $penquinPath/headTailFiles/ \; 2>/dev/null
-
-	echo -e "\nHiding complit...n\n"
-
-	##4065d2a24240426f6e9912a22bbfbab5##
-	##The malware checks for the /var/tmp/task* files, If these are empty,
-	## It procures the information and forks.##
-	cp /var/tmp/taskhost $penquinPath/taskhost_file 2>/dev/null
-	cp /var/tmp/taskpid $penquinPath/taskpid_file 2>/dev/null
-	cp /var/tmp/tasklog $penquinPath/tasklog_file 2>/dev/null
-	cp /var/tmp/taskgid $penquinPath/taskgid_file 2>/dev/null
-	##Then it saves logs at /var/tmp/.Xtmp01 and also it creates files ended with .xk###
-	cp /var/tmp/.Xtmp01 $penquinPath/xtmp01_file 2>/dev/null 
-	mkdir $penquinPath/xkFiles
-	find / -type f -name \*.xk -execdir cp {} $penquinPath/xkFiles/ \; 2>/dev/null
-
-	##14cce7e641d308c3a177a8abb5457019##
-	##The malware is a compilation of the LOKI2 source code, it creates a file called loki.log##
-	find / -type f -name loki.log -execdir cp {} $penquinPath/ \; 2>/dev/null 
-
-	echo -e "\nreceving message\n"
-
-	##7b86f40e861705d59f5206c482e1f2a5##
-	##The malware checks for the file /var/tmp/gogo if it misses, the malware ends##
-	cp /var/tmp/gogo $penquinPath/gogo_file 2>/dev/null
-
-	##d8347b2e32086bd25d41530849472b8d##
-	##Shell script to extract all uniq source and destination IP from RES.u and RES.s to the file "list".##
-	find / -type f -name RES.u  -execdir cp {} $penquinPath/ \; 2>/dev/null
-	find / -type f -name RES.s  -execdir cp {} $penquinPath/ \; 2>/dev/null
-	find / -type f -name list  -exec tar -rvf $penquinPath/listFiles.tar {} \; 2>/dev/null
-	gzip $penquinPath/listFiles.tar
-	##35f87672e8b7cc4641f01fb4f2efe8c3##
-	##Shell script that between others it creates a file called res.tar##
-	find / -type f -name res.tar  -execdir cp {} $penquinPath/ \; 2>/dev/null
-
-	echo -e "\nopen file for read\n"
-
-	##67d9556c695ef6c51abf6fbab17acb3466e3149cf4d20cb64d6d34dc969b6502##
-	##Hidden files used by penquin referer at leonardocompany.com paper##
-	cp /tmp/.xdfg $penquinPath/xdfg_file 2>/dev/null
-	cp /tmp/.sync.pid $penquinPath/sync_pid_file 2>/dev/null
-	cp /root/.xfdshp1 $penquinPath/xfdshp1_file 2>/dev/null
-	cp /root/.session $penquinPath/sesssion_file 2>/dev/null
-	cp /root/.sess $penquinPath/sess_file 2>/dev/null
-	cp /root/.hsperfdata $penquinPath/hsperfdata_file 2>/dev/null
-	
-	echo -e "\nConnect successful....\n"
-
-	##Why not getting all the hidden files in tmp and root##
-	find /tmp -maxdepth 1 -type f  -name '.*' -execdir tar -rvf $penquinPath/hiddenTMPFiles.tar {} \;
-	gzip $penquinPath/hiddenTMPFiles.tar
-	find /root -maxdepth 1 -type f  -name '.*' -execdir tar -rvf $penquinPath/hiddenROOTFiles.tar {} \;
-	gzip $penquinPath/hiddenROOTFiles.tar
-	
-	##God tool's are grep and find not Yara##
-	find /home /tmp /etc /var /root ! -path . -type f -size -5000k -exec grep -Hal '__we_are_happy_\|VS filesystem\|remote filesystem!\|rem_fd:\|TREX_PID\|Z@@NM@@G_Y_FE\|supported only on ethernet/FDDI/token\||  size  |state|\|IPv6 address %s not supported' {} \; >>$penquinPath/grepedFilesList 2>/dev/null
-	[ -s $penquinPath/grepedFilesList ] && {
-		mkdir $penquinPath/grepedFiles;
-		while IFS="" read -r p || [ -n "$p" ];
-			do  cp "$p"  $penquinPath/grepedFiles/;
-		done < $penquinPath/grepedList;
-	}
-
-	echo -e "\n...that's it. peace man :)\n"
-	echo -e "Done!\n"
+#Compress all and remove working directories
+_compressAndRemove(){
+	mv $currentPath/.results $currentPath/evidence
+	tar -cvzf $currentPath/evidence.tar.gz  -C $currentPath/ evidence  --remove-files
+	chown $(logname):$(logname) $currentPath/evidence.tar.gz
 }
-
 
 
 ###############
@@ -309,6 +315,7 @@ _banner
 unset out
 unset opt
 unset type
+unset plugin
 
 # Transform long options to short ones
 for arg in "$@"; do
@@ -317,18 +324,22 @@ for arg in "$@"; do
     "--type")		set -- "$@" "-t" ;;
     "--out")		set -- "$@" "-o" ;;
     "--version")	set -- "$@" "-v" ;;
-	"--help")	set -- "$@" "-h" ;;
+	"--help")		set -- "$@" "-h" ;;
+	"--plugin")		set -- "$@" "-p" ;;
 	"--"*)			usage;;
     *)				set -- "$@" "$arg"
   esac
 done
 
 OPTIND=1
-while getopts ":t:o:vh" opt
+while getopts ":t:p:o:vh" opt
 do
 	case "$opt" in
 		t)
 			type=${OPTARG}
+			;;
+		p)
+			plugin=${OPTARG}
 			;;
 		o)
 			out=${OPTARG}
@@ -349,14 +360,6 @@ do
 done
 shift "$((OPTIND-1))"
 
-#Set output directory
-if [ -z "$out" ]
-then
-	currentPath=$(pwd)
-else
-	currentPath=$(pwd)"/"$out
-fi
-
 # Continue only allowed to root users bro
 if [ "$EUID" -ne 0 ]
   then
@@ -364,69 +367,84 @@ if [ "$EUID" -ne 0 ]
   	usage
 fi
 
+#Set output directory
+if [ -z "$out" ]
+then
+	currentPath=$(pwd)
+	mkdir $currentPath/.results
+else
+	currentPath=$out
+	echo -e "[INFO]: Checking if directory $currentPath exists.\n"
+	if _directory_exists $currentPath
+	then
+		mkdir $currentPath/.results
+	else
+		if [[ $currentPath == /* ]];
+		then
+			echo -e "[ERROR]: Given path does not exists: $currentPath\n"
+			exit 1
+		fi
+
+		echo -e "[WARNING]: Creating $currentPath folder(s) in current path.\n"
+		mkdir -p $currentPath/.results
+		currentPath=$(pwd)"/"$currentPath
+		echo -e "[INFO]: Giving permisions to $currentPath as user: $(logname)\n"
+		chown $(logname):$(logname) $currentPath
+	fi
+fi
 
 #select_execution_mode
 if [ -z "$type" ]
 then
-	echo -e "ERROR: The parameter [--type <fast|full>] is mandatory \n"
-	usage
-else
-	if [ "$type" == "fast" ]
-	then
-		_show_parameters $type $currentPath
-		if _directory_exists $currentPath
-		then
-			mkdir $currentPath/.results
-			LiveInformation
-			Dumps
-			PerUserDumps
-		else
-			mkdir -p $currentPath/.results
-			chown $(logname):$(logname) $currentPath
-			echo "USUARIO:  $(logname)"
-			LiveInformation
-			Dumps
-			PerUserDumps
-		fi
-	else
-		if [ "$type" == "full" ]
-		then
-			_show_parameters $type $currentPath
-			if _directory_exists $currentPath;
-			then
-				mkdir $currentPath/.results
-				LiveInformation
-				Dumps
-				PerUserDumps
-				FileSystem
-			else
-				mkdir -p $currentPath/.results
-				chown $(logname):$(logname) $currentPath
-				LiveInformation
-				Dumps
-				PerUserDumps
-				FileSyste
-			fi
-		else
-			if [ "$type" == "penquin" ]
-			then
-				_show_parameters $type $currentPath
-				if _directory_exists $currentPath;
-				then
-					mkdir $currentPath/.results
-					KnockKnock
-				else
-					mkdir -p $currentPath/.results
-					chown $(logname):$(logname) $currentPath
-					KnockKnock
-				fi
-			else
-				echo -e "ERROR: Wrong type of triage: \"$type\" does not exist \n"
-				usage
-			fi
-		fi
-	fi
-	CompressAndRemove
-	exit 1
+	echo -e "[ERROR]: The parameter [--type <fast|full>] is mandatory \n"
+	rmdir $currentPath/.results
+	usage #Ends execution
 fi
+
+
+_show_parameters $type $currentPath $plugin
+##Recognizing the proper type of triage
+case "$type" in
+		fast)
+			echo -e "[INFO]: Executing $type triage.\n"
+			LiveInformation
+			Dumps
+			PerUserDumps
+			;;
+		full)
+			echo -e "[INFO]: Executing $type triage.\n"
+			LiveInformation
+			Dumps
+			PerUserDumps
+			FileSystem
+			;;
+		penquin)
+			KnockKnock
+			;;
+		*)
+			echo -e "[ERROR]: Wrong type of triage: \"$type\" does not exist \n"
+			rmdir $currentPath/.results
+			usage
+			;;
+esac
+
+case "$plugin" in
+		penquin)
+			if [ "$type" == "penquin" ]; then
+				echo -e "[Penquin]: Doing tricky things ah?. I'm not gonna do anything yet...\n"
+			else
+				KnockKnock
+			fi
+			;;
+		"")
+			echo -e "\n[INFO]: No plugin was selected.\n"
+			;;
+		*)
+			echo -e "\n[WARNING]: Wrong type of plugin: \"$plugin\" does not exist."
+			echo -e "[WARNING]: Doing nothing.\n"
+			;;
+esac
+
+echo -e "[INFO]: Generating evidence package."
+_compressAndRemove
 exit 1
