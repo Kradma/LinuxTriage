@@ -1,5 +1,5 @@
 # PureLinuxTriage V2
-Usage: sudo $0 --type \<fast|full\> [--plugin \<penquin\> --out \<FULL PATH directory\>]\
+Usage: sudo ./LinuxTriage --type \<fast|full\> [--plugin \<penquin\> --out \<FULL PATH directory\>]\
 -t, --type	sets the type of triage to execute\
 -p, --plugin	sets the desired plugin to execute\
 -o, --out 	sets the output directory\
