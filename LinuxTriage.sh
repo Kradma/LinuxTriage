@@ -33,7 +33,7 @@ LiveInformation(){
 	##Kernel Modules INFO##
 	#get_modules
 	echo "####### lsmod #######" >> $liveInfoPath/module_list.txt
-	lsmod >> $liveInfoPath/modules_list.txt
+	lsmod >> $liveInfoPath/module_list.txt
 	#Now we get info from each module
 	for module in $(lsmod | sed '1d'| awk '{print $1}');  do echo -e "\nModule: $module" >> $liveInfoPath/module_info.txt;   modinfo $module >> $liveInfoPath/module_info.txt; echo "List of $module dependencies: " >> $liveInfoPath/module_info.txt; IFS=$'\n'; for modDep in $(modprobe --show-depends $module);     do echo " * $modDep" >> $liveInfoPath/module_info.txt;     done; unset IFS; done
 
@@ -175,7 +175,8 @@ FileSystem(){
 	mkdir $currentPath/.results/FileSystem
 	fileSystemPath=$currentPath/.results/FileSystem
 	#get_all_files_info
-	find / -type f -exec stat {} \; -execdir echo -n "Sha256: " \; -execdir bash -c 'echo $(sha256sum {})|sed "s/ .*//g"' \; -execdir echo -n " Magic: " \; -execdir bash -c 'echo $(file {})|sed "s/.* //g"' \; -execdir echo "" \; >> $fileSystemPath/fileSystemlog
+
+	find /home /tmp /etc /var /root /bin /sbin -xdev -type f -exec stat {} \; -execdir echo -n "Sha256: " \; -execdir bash -c 'echo $(sha256sum '{}')|sed "s/ .*//g"' \; -execdir echo -n " Magic: " \; -execdir bash -c 'echo $(file {})|sed "s/.* //g"' \; -execdir echo "" \; >> $fileSystemPath/fileSystemlog
 
 }
 
@@ -397,7 +398,13 @@ else
 	echo -e "[INFO]: Checking if directory $currentPath exists.\n"
 	if _directory_exists $currentPath
 	then
-		mkdir $currentPath/.results
+		if [[ $currentPath == /* ]];
+		then
+			mkdir $currentPath/.results
+		else
+			currentPath=$(pwd)"/"$currentPath
+			mkdir $currentPath/.results
+		fi
 	else
 		if [[ $currentPath == /* ]];
 		then
