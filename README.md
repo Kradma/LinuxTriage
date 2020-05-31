@@ -8,3 +8,7 @@ Usage: sudo ./LinuxTriage --type \<fast|full\> [--plugin \<penquin\> --out \<FUL
 
 ## Plugins
 Plugins are specific modules made to grab common artifacts leaved by threat actors.
+
+## Based on the work of:
+* [SekoiaLab Fastir\_Collector\_Linux](https://github.com/SekoiaLab/Fastir_Collector_Linux)
+* [Recruit-CSIRT LinuxTriage](https://github.com/Recruit-CSIRT/LinuxTriage)

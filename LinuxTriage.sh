@@ -141,10 +141,11 @@ PerUserDumps(){
 		find /home/$user -maxdepth 1 -type f -name '.*' -exec tar -rf $perUserPath/$user/hiddenFiles.tar {} \; 2>&1 | grep -v  "Removing leading"
 		gzip $perUserPath/$user/hiddenFiles.tar
 		$(cd / && tar -czf $perUserPath/$user/hiddenConfig.tar.gz home/$user/.config)
-		cp /home/$user/.ssh/known_hosts $perUserPath/$user/ssh_known_hosts
+		cp /home/$user/.ssh/known_hosts $perUserPath/$user/ssh_known_hosts.txt
+		cp /home/$user/.ssh/config $perUserPath/$user/ssh_config.txt
 		#tar -czvf $perUserPath/$user/hiddenFiles.tar.gz /home/$user/.*
 		#cd /home/$user && tar -cvzf $perUserPath/$user/hiddenFiles.tar.gz $(ls -pa /home/$user  | grep -v / |grep -ie "^\.[a-z]") && cd -
-		crontab -u $user -l >> $perUserPath/$user/crontab	
+		crontab -u $user -l >> $perUserPath/$user/crontab.txt	
 	done
 
 }
