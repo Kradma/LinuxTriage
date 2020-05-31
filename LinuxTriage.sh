@@ -10,26 +10,37 @@ LiveInformation(){
 	echo -e "[INFO LiveInformation()]: Getting SYSTEM INFO"
 	###SYSTEM INFO###
 	#get_Processes
-	echo "####### ps -ewo %p,%P,%x,%t,%u,%c,%a #######" >> $liveInfoPath/processes
-	ps -ewo %p,%P,%x,%t,%u,%c,%a >> $liveInfoPath/processes
+	echo "####### ps -ewo '%p %P %x %t %u %c %a' #######" >> $liveInfoPath/processes.txt
+	ps -ewo "%p %P %x %t %u %c %a" >> $liveInfoPath/processes.txt
 	#get_kernel_version
-	echo "####### uname -a #######" >> $liveInfoPath/kernel_versio
-	uname -a >> $liveInfoPath/kernel_version
+	echo "####### uname -a #######" >> $liveInfoPath/kernel_versio.txt
+	uname -a >> $liveInfoPath/kernel_version.txt
 	#get_os_info
-	echo "####### hostnamectl #######" >> $liveInfoPath/hostnamectl
-	hostnamectl >> $liveInfoPath/hostnamectl
+	echo "####### hostnamectl #######" >> $liveInfoPath/hostnamectl.txt
+	hostnamectl >> $liveInfoPath/hostnamectl.txt
 	#get_logon
-	echo "####### last -Faixw #######" >> $liveInfoPath/logon
-	last -Faixw >> $liveInfoPath/logon
+	echo "####### last -Faixw #######" >> $liveInfoPath/logon.txt
+	last -Faixw >> $liveInfoPath/logon.txt
 	#get_handles
-	echo "####### lsof -R #######" >> $liveInfoPath/handles
-	lsof -R >> $liveInfoPath/handles
+	echo "####### lsof -R #######" >> $liveInfoPath/handles.txt
+	lsof -R >> $liveInfoPath/handles.txt
+	#get_pciDevices
+	echo "####### lspci #######" >> $liveInfoPath/pciDevices.txt
+	lspci >> $liveInfoPath/pciDevices.txt
+	#get_mounted_devices
+	echo "####### mount #######" >> $liveInfoPath/mountedDevices.txt
+	mount >> $liveInfoPath/mountedDevices.txt
+	##Kernel Modules INFO##
 	#get_modules
-	echo "####### lsmod #######" >> $liveInfoPath/modules
-	lsmod >> $liveInfoPath/modules
+	echo "####### lsmod #######" >> $liveInfoPath/module_list.txt
+	lsmod >> $liveInfoPath/modules_list.txt
+	#Now we get info from each module
+	for module in $(lsmod | sed '1d'| awk '{print $1}');  do echo -e "\nModule: $module" >> $liveInfoPath/module_info.txt;   modinfo $module >> $liveInfoPath/module_info.txt; echo "List of $module dependencies: " >> $liveInfoPath/module_info.txt; IFS=$'\n'; for modDep in $(modprobe --show-depends $module);     do echo " * $modDep" >> $liveInfoPath/module_info.txt;     done; unset IFS; done
+
+
 	#get_System_diagnostic
-	echo "####### dmesg #######" >> $liveInfoPath/dmesg
-	dmesg >> $liveInfoPath/dmesg
+	echo "####### dmesg #######" >> $liveInfoPath/dmesg.txt
+	dmesg >> $liveInfoPath/dmesg.txt
 
 	echo -e "[INFO LiveInformation()]: Getting NETWORK INFO"
 	###NETWORK INFO###
@@ -141,11 +152,19 @@ PerUserDumps(){
 		find /home/$user -maxdepth 1 -type f -name '.*' -exec tar -rf $perUserPath/$user/hiddenFiles.tar {} \; 2>&1 | grep -v  "Removing leading"
 		gzip $perUserPath/$user/hiddenFiles.tar
 		$(cd / && tar -czf $perUserPath/$user/hiddenConfig.tar.gz home/$user/.config)
+		
+		#Gets SSH files
 		cp /home/$user/.ssh/known_hosts $perUserPath/$user/ssh_known_hosts.txt
 		cp /home/$user/.ssh/config $perUserPath/$user/ssh_config.txt
-		#tar -czvf $perUserPath/$user/hiddenFiles.tar.gz /home/$user/.*
-		#cd /home/$user && tar -cvzf $perUserPath/$user/hiddenFiles.tar.gz $(ls -pa /home/$user  | grep -v / |grep -ie "^\.[a-z]") && cd -
-		crontab -u $user -l >> $perUserPath/$user/crontab.txt	
+		
+		#Gets USER crontabs
+		crontab -u $user -l >> $perUserPath/$user/crontab.txt
+
+		#Gets USER history files
+		for histFile in /home/$user/.*_history
+		do
+			cp $histFile $perUserPath/$user/
+		done
 	done
 
 }
@@ -364,7 +383,7 @@ shift "$((OPTIND-1))"
 # Continue only allowed to root users bro
 if [ "$EUID" -ne 0 ]
   then
-  	echo -e "Bro, this program will only run as root...\n"
+  	echo -e "[INFO]: Bro, this program will only run as root...\n"
   	usage
 fi
 
