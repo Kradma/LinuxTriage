@@ -176,7 +176,7 @@ FileSystem(){
 	fileSystemPath=$currentPath/.results/FileSystem
 	#get_all_files_info
 
-	find /home /tmp /etc /var /root /bin /sbin -xdev -type f -exec stat {} \; -execdir echo -n "Sha256: " \; -execdir bash -c 'echo $(sha256sum '{}')|sed "s/ .*//g"' \; -execdir echo -n " Magic: " \; -execdir bash -c 'echo $(file {})|sed "s/.*: //g"' \; -execdir echo "" \; >> $fileSystemPath/fileSystemlog
+	find /home /tmp /etc /root /bin /sbin -xdev -type f -exec stat {} \; -execdir echo -n "Sha256: " \; -execdir bash -c 'echo $(sha256sum '{}')|sed "s/ .*//g"' \; -execdir echo -n " Magic: " \; -execdir bash -c 'echo $(file {})|sed "s/.*: //g"' \; -execdir echo "" \; >> $fileSystemPath/fileSystemlog
 
 }
 
