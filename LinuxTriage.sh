@@ -13,7 +13,7 @@ LiveInformation(){
 	echo "####### ps -ewo '%p %P %x %t %u %c %a' #######" >> $liveInfoPath/processes.txt
 	ps -ewo "%p %P %x %t %u %c %a" >> $liveInfoPath/processes.txt
 	#get_kernel_version
-	echo "####### uname -a #######" >> $liveInfoPath/kernel_versio.txt
+	echo "####### uname -a #######" >> $liveInfoPath/kernel_version.txt
 	uname -a >> $liveInfoPath/kernel_version.txt
 	#get_os_info
 	echo "####### hostnamectl #######" >> $liveInfoPath/hostnamectl.txt
@@ -176,7 +176,7 @@ FileSystem(){
 	fileSystemPath=$currentPath/.results/FileSystem
 	#get_all_files_info
 
-	find /home /tmp /etc /var /root /bin /sbin -xdev -type f -exec stat {} \; -execdir echo -n "Sha256: " \; -execdir bash -c 'echo $(sha256sum '{}')|sed "s/ .*//g"' \; -execdir echo -n " Magic: " \; -execdir bash -c 'echo $(file {})|sed "s/.* //g"' \; -execdir echo "" \; >> $fileSystemPath/fileSystemlog
+	find /home /tmp /etc /var /root /bin /sbin -xdev -type f -exec stat {} \; -execdir echo -n "Sha256: " \; -execdir bash -c 'echo $(sha256sum '{}')|sed "s/.*: //g"' \; -execdir echo -n " Magic: " \; -execdir bash -c 'echo $(file {})|sed "s/.* //g"' \; -execdir echo "" \; >> $fileSystemPath/fileSystemlog
 
 }
 
