@@ -45,26 +45,26 @@ LiveInformation(){
 	echo -e "[INFO LiveInformation()]: Getting NETWORK INFO"
 	###NETWORK INFO###
 	#get_network_cards
-	echo "####### (ip addr || ifconfig -a) #######" >> $liveInfoPath/ip_addr
-	(ip addr || ifconfig -a) >> $liveInfoPath/ip_addr
+	echo "####### (ip addr || ifconfig -a) #######" >> $liveInfoPath/ip_addr.txt
+	(ip addr || ifconfig -a) >> $liveInfoPath/ip_addr.txt
 	#get_hostname
-	echo "####### hostname #######" >> $liveInfoPath/hostname
-	hostname >> $liveInfoPath/hostname
+	echo "####### hostname #######" >> $liveInfoPath/hostname.txt
+	hostname >> $liveInfoPath/hostname.txt
 	#get_network_connection
-	echo "####### ss/netstat -apetul #######" >> $liveInfoPath/network_connections
-	(ss -apetul|| netstat -apetul) >> $liveInfoPath/network_connections
-	echo "\n" >> $liveInfoPath/network_connections
-	echo "####### ss/netstat -putona #######" >> $liveInfoPath/network_connections
-	(ss -putona|| netstat -putona) >> $liveInfoPath/network_connections
-	echo "\n" >> $liveInfoPath/network_connections
-	echo "####### Plain ss/netstat #######" >> $liveInfoPath/network_connections
-	(ss || netstat) >> $liveInfoPath/network_connections
+	echo "####### ss/netstat -apetul #######" >> $liveInfoPath/network_connections.txt
+	(ss -apetul|| netstat -apetul) >> $liveInfoPath/network_connections.txt
+	echo "\n" >> $liveInfoPath/network_connections.txt
+	echo "####### ss/netstat -putona #######" >> $liveInfoPath/network_connections.txt
+	(ss -putona|| netstat -putona) >> $liveInfoPath/network_connections.txt
+	echo "\n" >> $liveInfoPath/network_connections.txt
+	echo "####### Plain ss/netstat #######" >> $liveInfoPath/network_connections.txt
+	(ss || netstat) >> $liveInfoPath/network_connections.txt
 	#get_routes
-	echo "####### route || ip r #######" >> $liveInfoPath/routes
-	(ip r || route ) >> $liveInfoPath/routes
+	echo "####### route || ip r #######" >> $liveInfoPath/routes.txt
+	(ip r || route ) >> $liveInfoPath/routes.txt
 	#get_neighbors
-	echo "####### arp -v  || ip -s neigh #######" >> $liveInfoPath/neighbors
-	(ip -s neigh || arp -v ) >> $liveInfoPath/neighbors
+	echo "####### arp -v  || ip -s neigh #######" >> $liveInfoPath/neighbors.txt
+	(ip -s neigh || arp -v ) >> $liveInfoPath/neighbors.txt
 }
 
 #Collects some important files
@@ -87,40 +87,40 @@ Dumps(){
 	$(cd / && tar -czf $dumpsPath/autoruns/cronFiles.tar.gz etc/cron*)
 	tar -czf $dumpsPath/autoruns/init.tar.gz -C / etc/init/
 	tar -czf $dumpsPath/autoruns/systemd.tar.gz -C / lib/systemd/system/
-	cp /etc/rc.local $dumpsPath/autoruns/rc_local
+	cp /etc/rc.local $dumpsPath/autoruns/rc_local.txt
 
 	echo -e "\n[INFO Dumps()]: Getting SYSTEM FILES"
 	###SYSTEM FILES###
 	#get_passwd
-	echo "####### /etc/passwd #######" >> $dumpsPath/etc_passwd
-	cat /etc/passwd >> $dumpsPath/etc_passwd
+	echo "####### /etc/passwd #######" >> $dumpsPath/etc_passwd.txt
+	cat /etc/passwd >> $dumpsPath/etc_passwd.txt
 	#get_groups
-	echo "####### /etc/group #######" >> $dumpsPath/etc_groups
-	cat /etc/group >> $dumpsPath/etc_groups
+	echo "####### /etc/group #######" >> $dumpsPath/etc_groups.txt
+	cat /etc/group >> $dumpsPath/etc_groups.txt
 	#get_etc_bashrc
-	echo "####### /etc/bash.bashrc #######" >> $dumpsPath/etc_bashrc
-	cat /etc/bash.bashrc >> $dumpsPath/etc_bashrc
+	echo "####### /etc/bash.bashrc #######" >> $dumpsPath/etc_bashrc.txt
+	cat /etc/bash.bashrc >> $dumpsPath/etc_bashrc.txt
 	#get_etc_profile
-	echo "####### /etc/profile #######" >> $dumpsPath/etc_profile
-	cat /etc/profile >> $dumpsPath/etc_profile
+	echo "####### /etc/profile #######" >> $dumpsPath/etc_profile.txt
+	cat /etc/profile >> $dumpsPath/etc_profile.txt
 	#get_etc_sudoers
-	echo "####### /etc/sudoers #######" >> $dumpsPath/etc_sudoers
-	cat /etc/sudoers >> $dumpsPath/etc_sudoers
+	echo "####### /etc/sudoers #######" >> $dumpsPath/etc_sudoers.txt
+	cat /etc/sudoers >> $dumpsPath/etc_sudoers.txt
 	#get_os_release
-	echo "####### /etc/os-release #######" >> $dumpsPath/os_release
-	cat /etc/os-release >> $dumpsPath/os_release
+	echo "####### /etc/os-release #######" >> $dumpsPath/os_release.txt
+	cat /etc/os-release >> $dumpsPath/os_release.txt
 
 	echo -e "\n[INFO Dumps()]: Getting NETWORK FILES"
 	###NETWORK FILES###
 	#get_network_interfaces
-	echo "####### /etc/network/interfaces #######" >> $dumpsPath/interfaces
-	cat /etc/network/interfaces >>  $dumpsPath/interfaces
+	echo "####### /etc/network/interfaces #######" >> $dumpsPath/interfaces.txt
+	cat /etc/network/interfaces >>  $dumpsPath/interfaces.txt
 	#get_etc_hosts
-	echo "####### /etc/hosts #######" >> $dumpsPath/hosts
-	cat /etc/hosts >> $dumpsPath/hosts
+	echo "####### /etc/hosts #######" >> $dumpsPath/hosts.txt
+	cat /etc/hosts >> $dumpsPath/hosts.txt
 	#get_etc_resolv.conf
-	echo "####### /etc/resolv.conf #######" >> $dumpsPath/resolv_conf
-	cat /etc/resolv.conf >> $dumpsPath/resolv_conf
+	echo "####### /etc/resolv.conf #######" >> $dumpsPath/resolv_conf.txt
+	cat /etc/resolv.conf >> $dumpsPath/resolv_conf.txt
 
 	echo -e "\n[INFO Dumps()]: Getting /var/log folder"
 	###LOGS###
