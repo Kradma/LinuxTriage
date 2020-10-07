@@ -1,4 +1,4 @@
-# PureLinuxTriage V2.5
+# LinuxTriage V2.5
 Usage: sudo ./LinuxTriage --type \<fast|full\> [--plugin \<penquin\> --out \<FULL PATH directory\>]\
 -t, --type	sets the type of triage to execute\
 -p, --plugin	sets the desired plugin to execute\
